@@ -156,6 +156,10 @@ export default function Home({ data }) {
       cell: (info) => info.renderValue().trim(),
       footer: () => "Total",
     }),
+    columnHelper.accessor("temaNombre", {
+      header: () => "Tema",
+      cell: (info) => info.renderValue().trim(),
+    }),
     columnHelper.accessor("metaNombre", {
       header: () => "Meta",
       cell: (info) => info.renderValue().trim(),
@@ -174,7 +178,8 @@ export default function Home({ data }) {
   const table = useReactTable({
     data: data.items.map((item) => ({
       ...item,
-      metaNombre: item.meta?.tema?.nombre || "",
+      temaNombre: item.meta?.tema?.nombre || "",
+      metaNombre: item.meta?.nombre || "",
     })),
     columns,
     filterFns: {
