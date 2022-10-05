@@ -12,7 +12,7 @@ import {
 import { rankItem } from "@tanstack/match-sorter-utils";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { isUndefined } from "lodash";
+import { isEmpty, isUndefined } from "lodash";
 import Backdrop from "../components/Backdrop";
 import {
   Chart as ChartJS,
@@ -23,8 +23,8 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -195,10 +195,10 @@ export default function Home() {
 
     const projectDataJson = await Promise.all(
       projectData.map((project) => project.json())
-    )
+    );
 
     setDataSpecific(projectDataJson.map((project) => project[0]));
-    setLoading(false)
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -210,25 +210,33 @@ export default function Home() {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top',
+        position: "top",
       },
       title: {
         display: true,
-        text: 'Presupuestos Participativos Kennedy 2022',
+        text: "Presupuestos Participativos Kennedy 2022",
       },
     },
   };
-  
-  const graphData = {
-    labels: dataSpecific.map((project) => project.nombreOrganizacion.split(" ").slice(0, 3).join(" "),),
-    datasets: [
-      {
-        label: 'Votación',
-        data: dataSpecific.map((project) => project.valorRecaudado),
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      },
-    ],
+
+  const renderGraph = () => {
+    const graphData = {
+      labels:
+        dataSpecific?.map(
+          (project) =>
+            project.nombreOrganizacion?.split(" ").slice(0, 3).join(" ") || ""
+        ) || [],
+      datasets: [
+        {
+          label: "Votación",
+          data:
+            dataSpecific?.map((project) => project.valorRecaudado || 0) || [],
+          borderColor: "rgb(255, 99, 132)",
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+        },
+      ],
+    };
+    return <Line options={options} data={graphData} />;
   };
 
   const columns = [
@@ -337,7 +345,7 @@ export default function Home() {
               <tr key={row.id}>
                 {row.getVisibleCells().map((cell) => {
                   return (
-                    <td key={cell.id} >
+                    <td key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -381,7 +389,9 @@ export default function Home() {
         </Head>
 
         <main className="p-2 block max-w-full overflow-x-scroll overflow-y-hidden">
-          <Line options={options} data={graphData} />
+          {!isUndefined(dataSpecific) &&
+            !isEmpty(dataSpecific) &&
+            renderGraph()}
           <div className="h-2" />
           <div className="p-2">
             <DebouncedInput
