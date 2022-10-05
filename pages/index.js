@@ -33,7 +33,7 @@ function DebouncedInput({
     }, debounce);
 
     return () => clearTimeout(timeout);
-  }, [value, debounce, onChange]);
+  }, [value]);
 
   return (
     <input
@@ -56,7 +56,7 @@ function Filter({ column, table }) {
       typeof firstValue === "number"
         ? []
         : Array.from(column.getFacetedUniqueValues().keys()).sort(),
-    [column.getFacetedUniqueValues(), firstValue, column]
+    [column.getFacetedUniqueValues()]
   );
 
   return typeof firstValue === "number" ? (
