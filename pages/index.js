@@ -6,7 +6,6 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -131,7 +130,7 @@ const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-export default function Home({ data }) {
+export default function Home({ data, dataSpecific }) {
   const [globalFilter, setGlobalFilter] = useState(undefined);
   const [columnFilters, setColumnFilters] = useState([]);
   const columnHelper = createColumnHelper();
@@ -168,7 +167,7 @@ export default function Home({ data }) {
       header: () => "Votos",
       cell: (info) => info.renderValue(),
       footer: () => {
-        return data.items.reduce((acc, item) => {
+        return dataSpecific.reduce((acc, item) => {
           return acc + item.valorRecaudado;
         }, 0);
       },
@@ -176,7 +175,7 @@ export default function Home({ data }) {
   ];
 
   const table = useReactTable({
-    data: data.items.map((item) => ({
+    data: dataSpecific.map((item) => ({
       ...item,
       temaNombre: item.meta?.tema?.nombre || "",
       metaNombre: item.meta?.nombre || "",
@@ -279,7 +278,7 @@ export default function Home({ data }) {
       </table>
     );
   };
-
+  console.log("dataSpecific", dataSpecific);
   return (
     <div>
       <Head>
@@ -305,6 +304,16 @@ export default function Home({ data }) {
 }
 
 export async function getStaticProps() {
+  const projects = [
+    "3dedf866-400a-4e3b-94eb-f6eba7e5ff98",
+    "8932251e-40e8-4526-88ec-bf713f620431",
+    "a7d3481e-637b-4e7c-a160-b853f31e6fda",
+    "be20b561-1c34-4c69-a707-70146a8dd892",
+    "46825a3d-e8c6-4f0b-bdb3-8dc2c239b773",
+    "6e51d416-754f-4363-a211-3b22229c0186",
+    "9536f2c2-59a9-4f9b-a6af-0e8fe932d383",
+    "f04e957a-b46a-4baf-975e-5fc02973dc8c",
+  ];
   const res = await fetch(
     "https://participacion.gobiernoabiertobogota.gov.co/api/parametricas?page=1&limit=160&estado%5B%5D=Aprobado&localidad=8",
     {
@@ -318,9 +327,38 @@ export async function getStaticProps() {
   );
   const data = await res.json();
 
+  const projectPromises = [];
+
+  projects.forEach(async (project) => {
+    projectPromises.push(
+      fetch(
+        `https://participacion.gobiernoabiertobogota.gov.co/api/${project}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-modulo": "0",
+            "x-permiso": "100",
+            authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiamhvbi52aWxsYXJyZWFscEBnbWFpbC5jb20iLCJpYXQiOjE2NjA2NDAyNjAsImV4cCI6MTY2MDY2OTA2MH0.yj15Mvma95UU_ok8FRbC0YIVps0gBHzkcUYnSSq3cbk",
+          },
+        }
+      )
+    );
+  });
+
+  const projectData = await Promise.all(projectPromises);
+
+  const projectDataJson = await Promise.all(
+    projectData.map((project) => project.json())
+  );
+  
+  const dataSpecific = projectDataJson.map((project) => project[0]);
+
   return {
     props: {
       data: data || [],
+      dataSpecific,
     },
   };
 }
