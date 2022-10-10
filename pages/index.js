@@ -294,7 +294,6 @@ export default function Home() {
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
   });
 
   // Renders
@@ -328,7 +327,7 @@ export default function Home() {
                         </div>
                         {header.column.getCanFilter() ? (
                           <div>
-                            <Filter column={header.column} table={table} />
+                            {/* <Filter column={header.column} table={table} /> */}
                           </div>
                         ) : null}
                       </>
